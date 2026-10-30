@@ -1,10 +1,6 @@
-﻿#pragma once
+#pragma once
 #include <iostream>
-#include <vector>
-#include <iostream>
-#include <windows.h>
 #include <string>
-
 
 enum Color { BLACK = 0, RED , DOUBLE_BLACK};
 
@@ -20,7 +16,6 @@ public:
 	Node(int color = Color::RED, int key = -1, Node* left = nullptr,
 		Node* right = nullptr, Node* parent = nullptr);
 
-
 };
 
 class RedBlackTree
@@ -28,8 +23,6 @@ class RedBlackTree
 private:
 	Node* root;
 	Node* sentinel;
-	std::vector<Node*> lastNode;
-
 
 public:
 
@@ -42,6 +35,9 @@ public:
 	//INSERT
 	RedBlackTree();
 	~RedBlackTree();
+	RedBlackTree(const RedBlackTree&) = delete;
+	RedBlackTree& operator=(const RedBlackTree&) = delete;
+	Node* getSentinel() const { return sentinel; }
 	void rotateLeft(Node* ptr);
 	void rotateRight(Node* ptr);
 	Node* BSTinsert(Node* root, Node*& node);
@@ -61,7 +57,5 @@ public:
 	//DISPLAY
 	void printTree(Node* node, int space);
 	void print();
-
-
 
 };

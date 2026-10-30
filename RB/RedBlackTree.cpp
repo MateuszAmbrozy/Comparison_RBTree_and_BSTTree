@@ -1,7 +1,6 @@
 #include "RedBlackTree.h"
+#include "../common/TreeDisplay.h"
 
-
-//CONSTRUCTORS
 Node::Node(int color, int key, Node* left,
 	Node* right, Node* parent)
 {
@@ -15,26 +14,23 @@ Node::Node(int color, int key, Node* left,
 
 RedBlackTree::RedBlackTree()
 {
-	//wartownik jest pustym wêz³em, jest u¿ywany zamiast nullptr,
-	//	poniewa¿ eliminuje potrzebê specjalnej obs³ugi wszystkich
-	//	przypadków naro¿nych, tj.ostatniego wêz³a, pierwszego wêz³a itp
 
 	this->sentinel = new Node(Color::BLACK);
+	sentinel->left = sentinel->right = sentinel->parent = sentinel;
 	this->root = sentinel;
 }
 
 RedBlackTree::~RedBlackTree()
 {
 	this->clear(this->root);
+	delete sentinel;
 }
 
-
-//INSERT
 void RedBlackTree::rotateLeft(Node* node)
 {
-	std::cout << "LEFT ROTATION\n";
-	Node* y = node->right; //inicjacja y
-	node->right = y->left; //zamiana lewego poddrzewa y na prawe poddrzewo x
+
+	Node* y = node->right; // Pivot node.
+	node->right = y->left; // Move the pivot's left subtree to the right of the rotated node.
 	if (node->right != sentinel)
 	{
 		node->right->parent = node;
@@ -59,14 +55,13 @@ void RedBlackTree::rotateLeft(Node* node)
 }
 void RedBlackTree::rotateRight(Node* node)
 {
-	std::cout << "RIGHT ROTATION\n";
 
 	Node* y = node->left;
 	node->left = y->right;
 
-	if (node->right != sentinel)
+	if (node->left != sentinel)
 	{
-		node->right->parent = node;
+		node->left->parent = node;
 	}
 
 	y->parent = node->parent;
@@ -82,7 +77,7 @@ void RedBlackTree::rotateRight(Node* node)
 	else
 	{
 		node->parent->right = y;
-		
+
 	}
 	y->right = node;
 	node->parent = y;
@@ -120,7 +115,6 @@ void RedBlackTree::RBinsert(Node* node)
 {
 	root = this->BSTinsert(this->root, node);
 	Node* uncle;
-
 
 	this->setColor(node, Color::RED);
 
@@ -197,45 +191,21 @@ void RedBlackTree::setColor(Node* node, int color)
 
 	node->color = color;
 }
-//Final insert
 void RedBlackTree::add(int value)
 {
-	Node* node = new Node(value, Color::RED, sentinel, sentinel, this->root);
-	node->key = value;
+	Node* node = new Node(Color::RED, value, sentinel, sentinel, this->root);
 	this->RBinsert(node);
-	lastNode.push_back(node);
+
 }
 
 bool RedBlackTree::checkIfExist(int value)
 {
-	Node* r = root;
-	while (r != sentinel)
-	{
-		if (value == r->key)
-		{
-			return true; // Element zosta³ znaleziony
-		}
-		else if (value < r->key)
-		{
-			r = r->left;
-		}
-		else
-		{
-			r = r->right;
-		}
-	}
-// Element nie zosta³ znaleziony w drzewie
-	std::cout << "Podana liczba nie istnieje\n";
-	Sleep(2000);
-return false;
-
+    return find(value) != nullptr;
 }
 
-
-
-//DELETE
 Node* RedBlackTree::treeSuccessor(Node* node)
 {
+	if (!node || node == sentinel) return sentinel;
 	if (node->right != sentinel) {
 		node = node->right;
 		while (node->left != sentinel) {
@@ -264,8 +234,6 @@ Node* RedBlackTree::find(int value)
 
 void RedBlackTree::RBDeleteFixup(Node* node)
 {
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		while (node != root && getColor(node) == Color::BLACK) {
 			if (node == node->parent->left) {
@@ -322,139 +290,31 @@ void RedBlackTree::RBDeleteFixup(Node* node)
 			}
 		}
 		setColor(node, Color::BLACK);
-	
 
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	//if (node == sentinel)
-	//	return;
-
-	//if (node == root) {
-	//	root = sentinel;
-	//	return;
-	//}
-
-	//if (getColor(node) == RED || getColor(node->left) == RED || getColor(node->right) == RED) {
-	//	Node* child = node->left != sentinel ? node->left : node->right;
-
-	//	if (node == node->parent->left) {
-	//		node->parent->left = child;
-	//		if (child != sentinel)
-	//			child->parent = node->parent;
-	//		setColor(child, BLACK);
-	//		delete (node);
-	//	}
-	//	else {
-	//		node->parent->right = child;
-	//		if (child != sentinel)
-	//			child->parent = node->parent;
-	//		setColor(child, BLACK);
-	//		delete (node);
-	//	}
-	//}
-	//else {
-	//	Node* sibling = sentinel;
-	//	Node* parent = sentinel;
-	//	Node* ptr = node;
-	//	setColor(ptr, DOUBLE_BLACK);
-	//	while (ptr != root && getColor(ptr) == DOUBLE_BLACK) {
-	//		parent = ptr->parent;
-	//		if (ptr == parent->left) {
-	//			sibling = parent->right;
-	//			if (getColor(sibling) == RED) {
-	//				setColor(sibling, BLACK);
-	//				setColor(parent, RED);
-	//				rotateLeft(parent);
-	//			}
-	//			else {
-	//				if (getColor(sibling->left) == BLACK && getColor(sibling->right) == BLACK) {
-	//					setColor(sibling, RED);
-	//					if (getColor(parent) == RED)
-	//						setColor(parent, BLACK);
-	//					else
-	//						setColor(parent, DOUBLE_BLACK);
-	//					ptr = parent;
-	//				}
-	//				else {
-	//					if (getColor(sibling->right) == BLACK) {
-	//						setColor(sibling->left, BLACK);
-	//						setColor(sibling, RED);
-	//						rotateRight(sibling);
-	//						sibling = parent->right;
-	//					}
-	//					setColor(sibling, parent->color);
-	//					setColor(parent, BLACK);
-	//					setColor(sibling->right, BLACK);
-	//					rotateLeft(parent);
-	//					break;
-	//				}
-	//			}
-	//		}
-	//		else {
-	//			sibling = parent->left;
-	//			if (getColor(sibling) == RED) {
-	//				setColor(sibling, BLACK);
-	//				setColor(parent, RED);
-	//				rotateRight(parent);
-	//			}
-	//			else {
-	//				if (getColor(sibling->left) == BLACK && getColor(sibling->right) == BLACK) {
-	//					setColor(sibling, RED);
-	//					if (getColor(parent) == RED)
-	//						setColor(parent, BLACK);
-	//					else
-	//						setColor(parent, DOUBLE_BLACK);
-	//					ptr = parent;
-	//				}
-	//				else {
-	//					if (getColor(sibling->left) == BLACK) {
-	//						setColor(sibling->right, BLACK);
-	//						setColor(sibling, RED);
-	//						rotateLeft(sibling);
-	//						sibling = parent->left;
-	//					}
-	//					setColor(sibling, parent->color);
-	//					setColor(parent, BLACK);
-	//					setColor(sibling->left, BLACK);
-	//					rotateRight(parent);
-	//					break;
-	//				}
-	//			}
-	//		}
-	//	}
-	//	if (node == node->parent->left)
-	//		node->parent->left = sentinel;
-	//	else
-	//		node->parent->right = sentinel;
-	//	delete(node);
-	//	setColor(root, BLACK);
-	//}
 }
 void RedBlackTree::clear(Node* node)
 {
-	if (node == sentinel) {
-		return;
-	}
-
-	clear(node->left);
-	clear(node->right);
-
-	if (node->parent == sentinel) {
-		root = sentinel;
-	}
-	else if (node->parent->left == node) {
-		node->parent->left = sentinel;
-	}
-	else {
-		node->parent->right = sentinel;
-	}
-	delete node;
-	
+    if (!node || node == sentinel) return;
+    Node* boundary = node->parent;
+    if (boundary == sentinel) root = sentinel;
+    else if (boundary->left == node) boundary->left = sentinel;
+    else boundary->right = sentinel;
+    while (node != boundary) {
+        if (node->left != sentinel) { node = node->left; continue; }
+        if (node->right != sentinel) { node = node->right; continue; }
+        Node* parent = node->parent;
+        if (parent != boundary) {
+            if (parent->left == node) parent->left = sentinel;
+            else parent->right = sentinel;
+        }
+        delete node;
+        node = parent;
+    }
+    sentinel->parent = sentinel;
 }
 void RedBlackTree::RBdelete(Node* node)
 {
+		if (!node || node == sentinel) return;
 		Node* y = sentinel;
 		Node* x = sentinel;
 		if ((node->left == sentinel) || (node->right == sentinel))
@@ -488,37 +348,24 @@ void RedBlackTree::RBdelete(Node* node)
 		if (this->getColor(y) == Color::BLACK)
 			this->RBDeleteFixup(x);
 		delete y;
+		sentinel->parent = sentinel;
 }
 
-
-
-//Final remove
 void RedBlackTree::remove(int value)
 {
-	if(checkIfExist(value))
-		this->RBdelete(this->find(value));
+	this->RBdelete(this->find(value));
 }
 
-//DISPLAY
 void RedBlackTree::printTree(Node* node, int space)
 {
-	if (node == sentinel)
-	{
-		return;
-	}
-	space += 5;
-	printTree(node->right, space);
-	std::cout << std::endl;
-	for (int i = 5; i < space; i++) {
-		std::cout << " ";
-	}
-	std::cout << (node->color == RED ? "\033[1;31m" : "") << node->key << "\033[0m" << std::endl;
-	printTree(node->left, space);
+    tree_ui::draw(node, sentinel, [](Node* n) {
+        std::string label = std::to_string(n->key) + (n->color == RED ? " [R]" : " [B]");
+        return tree_ui::color(label, n->color == RED ? "31" : "36");
+    }, space);
 }
 
 void RedBlackTree::print()
 {
-	std::cout << "\t\tDRZEWO CZERWONO CZARNE\n\n";
-	this->printTree(this->root, 0);
-
+    std::cout << "RBTree â€” red-black tree   [R] red / [B] black\n";
+    printTree(root, 0);
 }

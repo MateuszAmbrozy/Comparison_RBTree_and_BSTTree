@@ -1,6 +1,7 @@
 #include "BST.h"
+#include "../common/TreeDisplay.h"
 
-Node::Node::Node(int key)
+Node::Node(int key)
 {
 	this->key = key;
 	this->left = this->right = this->parent = nullptr;
@@ -18,22 +19,7 @@ BST::~BST()
 
 bool BST::checkIfExist(int value)
 {
-	Node* r = root;
-	while (r != nullptr)
-	{
-		if (value == r->key)
-		{
-			return true; // Element zosta³ znaleziony
-		}
-		else if (value < r->key)
-		{
-			r = r->left;
-		}
-		else
-		{
-			r = r->right;
-		}
-	}
+    return find(value) != nullptr;
 }
 
 Node* BST::find(int value)
@@ -50,25 +36,23 @@ Node* BST::find(int value)
 
 void BST::clear(Node* node)
 {
-	if (node == nullptr) {
-		return;
-	}
-
-	// Recursively delete left and right subtrees
-	clear(node->left);
-	clear(node->right);
-
-	// Update parent pointers and delete current node
-	if (node->parent == nullptr) {
-		root = nullptr;
-	}
-	else if (node->parent->left == node) {
-		node->parent->left = nullptr;
-	}
-	else {
-		node->parent->right = nullptr;
-	}
-	delete node;
+    if (!node) return;
+    Node* boundary = node->parent;
+    if (!boundary) root = nullptr;
+    else if (boundary->left == node) boundary->left = nullptr;
+    else boundary->right = nullptr;
+    // Walk down to leaves and back through parents without recursion or allocation.
+    while (node != boundary) {
+        if (node->left) { node = node->left; continue; }
+        if (node->right) { node = node->right; continue; }
+        Node* parent = node->parent;
+        if (parent != boundary) {
+            if (parent->left == node) parent->left = nullptr;
+            else parent->right = nullptr;
+        }
+        delete node;
+        node = parent;
+    }
 }
 
 Node* BST::getRoot()
@@ -109,7 +93,6 @@ void BST::removeNode(Node* node)
 
 		if (node->left == nullptr || node->right == nullptr)
 		{
-			// Jeœli wêze³ ma co najwy¿ej jedno dziecko
 			x = (node->left != nullptr) ? node->left : node->right;
 
 			if (x != nullptr)
@@ -126,17 +109,15 @@ void BST::removeNode(Node* node)
 		}
 		else
 		{
-			// Jeœli wêze³ ma oba dzieci
 			Node* successor = treeSuccessor(node);
 			node->key = successor->key;
 			removeNode(successor);
 		}
-	
 
 }
 Node* BST::treeSuccessor(Node* node)
 {
-	// Jeœli prawe poddrzewo nie jest puste, to nastêpnik znajduje siê w nim
+	if (!node) return nullptr;
 	if (node->right != nullptr) {
 		node = node->right;
 		while (node->left != nullptr) {
@@ -144,8 +125,6 @@ Node* BST::treeSuccessor(Node* node)
 		}
 		return node;
 	}
-	// W przeciwnym razie, nastêpnik jest w pierwszym przodku, którego lewe
-	// poddrzewo zawiera wêze³ node.
 	Node* y = node->parent;
 	while (y != nullptr && node == y->right) {
 		node = y;
@@ -162,30 +141,18 @@ void BST::add(int value)
 
 void BST::remove(int value)
 {
-	if (checkIfExist(value))
-		this->removeNode(this->find(value));
+	this->removeNode(this->find(value));
 }
 
 void BST::printTree(Node* node, int space)
 {
-	if (node == nullptr)
-	{
-		return;
-	}
-	space += 5;
-	printTree(node->right, space);
-	std::cout << std::endl;
-	for (int i = 5; i < space; i++) {
-		std::cout << " ";
-	}
-	std::cout << node->key << std::endl;
-	printTree(node->left, space);
+    tree_ui::draw(node, static_cast<Node*>(nullptr), [](Node* n) {
+        return std::to_string(n->key);
+    }, space);
 }
 
 void BST::print()
 {
-	std::cout << "\t\tDRZEWO CZERWONO CZARNE\n\n";
-	this->printTree(this->root, 0);
+    std::cout << "BST â€” binary search tree\n";
+    printTree(root, 0);
 }
-
-

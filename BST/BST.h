@@ -6,7 +6,6 @@ class Node
 public:
 	Node* left, * right, * parent;
 	int key;
-	
 
 	 Node(int key = 0);
 };
@@ -18,6 +17,8 @@ private:
 public:
 	BST();
 	~BST();
+	BST(const BST&) = delete;
+	BST& operator=(const BST&) = delete;
 
 	bool checkIfExist(int value);
 	Node* find(int value);
